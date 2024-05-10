@@ -1,9 +1,10 @@
 import { Box, Button, Container, Flex, Heading, IconButton, Input, SimpleGrid, Text, useColorModeValue, VStack } from "@chakra-ui/react";
-import { FaPlus, FaTrash } from "react-icons/fa";
+import { FaPlus, FaTrash, FaStar, FaRegStar } from "react-icons/fa";
 import { useState } from "react";
 
 const Index = () => {
   const [notes, setNotes] = useState([]);
+  const [favorites, setFavorites] = useState(new Set());
   const [input, setInput] = useState("");
 
   const handleAddNote = () => {
@@ -13,9 +14,32 @@ const Index = () => {
     }
   };
 
+  const handleToggleFavorite = (index) => {
+    setFavorites((prev) => {
+      const newFavs = new Set(prev);
+      if (newFavs.has(index)) {
+        newFavs.delete(index);
+      } else {
+        newFavs.add(index);
+      }
+      return newFavs;
+    });
+  };
+
+  const handleEditNote = (index, newValue) => {
+    const newNotes = [...notes];
+    newNotes[index] = newValue;
+    setNotes(newNotes);
+  };
+
   const handleDeleteNote = (index) => {
     const newNotes = notes.filter((_, i) => i !== index);
     setNotes(newNotes);
+    setFavorites((prev) => {
+      const newFavs = new Set(prev);
+      newFavs.delete(index);
+      return newFavs;
+    });
   };
 
   const bgColor = useColorModeValue("white", "gray.700");
@@ -36,7 +60,8 @@ const Index = () => {
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6} w="full">
           {notes.map((note, index) => (
             <Box key={index} p={5} shadow="md" borderWidth="1px" borderRadius="lg" bg={bgColor} position="relative">
-              <Text fontSize="md">{note}</Text>
+              <Input value={note} onChange={(e) => handleEditNote(index, e.target.value)} size="md" variant="unstyled" />
+              <IconButton icon={favorites.has(index) ? <FaStar /> : <FaRegStar />} aria-label="Toggle favorite" size="sm" colorScheme="yellow" position="absolute" top={2} left={2} onClick={() => handleToggleFavorite(index)} />
               <IconButton icon={<FaTrash />} aria-label="Delete note" size="sm" colorScheme="red" position="absolute" top={2} right={2} onClick={() => handleDeleteNote(index)} />
             </Box>
           ))}
